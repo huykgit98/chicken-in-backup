@@ -6,6 +6,7 @@ module.exports = {
         "node": true,
         "jest": true
     },
+    "parser": "babel-eslint",
     "extends": "standard-warn",
     "parserOptions": {
         "ecmaVersion": 6,
@@ -23,8 +24,7 @@ module.exports = {
             2
         ],
         "linebreak-style": [
-            "warn",
-            "unix"
+            "off"
         ],
         "quotes": [
             "warn",
@@ -34,6 +34,11 @@ module.exports = {
             "warn",
             "never"
         ],
-        "react/jsx-uses-vars": [2]
+        "react/jsx-uses-vars": [
+            2
+        ],
+        "no-unused-vars": [
+            "off"
+        ]
     }
 };
