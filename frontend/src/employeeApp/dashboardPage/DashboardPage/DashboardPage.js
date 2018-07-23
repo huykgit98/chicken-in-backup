@@ -1,4 +1,4 @@
-import React from 'react';
+import React from 'react'
 import moment from 'moment'
 import './DashboardPage.scss'
 
@@ -9,51 +9,176 @@ import { AllShifts } from '../AllShifts/AllShifts'
 import { Form } from '../Form/Form'
 
 // Dummy Data
-import { dummyShifts } from '../../../dummyData'
-import { dummyEmployee } from '../../../dummyData'
+import { dummyShifts, dummyEmployee, dummyBusiness } from '../../../dummyData'
+
+import { hostURL } from '../../../hostUrl'
+const axios = require('axios')
 
 class DashboardPage extends React.Component {
-  
   state = {
-    allShifts: dummyShifts,
-    employee: dummyEmployee,
+    allShifts: [],
+    employee: {},
+    business: {},
     paginationWeekStart: moment().weekday(1).hours(0).minutes(0).seconds(0),
     paginationWeekEnd: moment().weekday(1).hours(0).minutes(0).seconds(0).add(7, 'days'),
+    displayMessage: false,
+    mounted: false
   }
 
-  archiveRejectedShift = (shiftId) => {
-    // 1. Store all the shifts in a new array
-    const allShifts = this.state.allShifts
+  async componentDidMount () {
+    try {
+      // 1. Get data from server
+      const response = await axios.get(`http://${hostURL}/api/shifts/employee`)
+      const allShifts = response.data
 
-    // 2. Find shift in allShifts array
-    const shiftToUpdate = allShifts.find((shift) => {
-      return shift.id === shiftId
-    })
-
-    // 3. Update shift status 
-    shiftToUpdate.status = "archived"
-
-    // 4. Set new allShift state
-    this.setState(() => {
-      return {
-        allShifts: allShifts
-      }
-    })
+      // 2. Set state of component
+      this.setState(() => {
+        return {
+          allShifts: allShifts,
+          employee: allShifts[0].employee,
+          business: allShifts[0].business,
+          mounted: true
+        }
+      })
+    } catch (error) {
+      this.setState(() => {
+        return {
+          allShifts: dummyShifts,
+          employee: dummyEmployee,
+          business: dummyBusiness[0],
+          mounted: true
+        }
+      })
+    }
   }
 
-  addShift = (newShiftObject) => {
-    // 1. Store all the shifts in a new array
-    const allShifts = this.state.allShifts
-    
-    // 2. Push new shift into array 
-    allShifts.push(newShiftObject)
+  archiveRejectedShift = async (shiftId) => {
+    try {
+      // 1. Send the delete request to the server
+      const result = await axios.put(`http://${hostURL}/api/shifts/archive/${shiftId}`)
+      const archivedShift = result.data
 
-    // 3. Set new allShift state
-    this.setState(() => {
-      return {
-        allShifts: allShifts
-      }
-    })
+      // 2. Find shift in allShifts array
+      const allShiftsToBeUpdated = this.state.allShifts.filter(() => {
+        return true
+      })
+
+      const shiftToUpdate = allShiftsToBeUpdated.find((shift) => {
+        return shift._id === archivedShift._id
+      })
+
+      // 3. Update shift status
+      shiftToUpdate.status = 'archived'
+
+      // 4. Set new allShift state
+      this.setState(() => {
+        return {
+          allShifts: allShiftsToBeUpdated
+        }
+      })
+    } catch (error) {
+      console.log(shiftId)
+      // 1. Find shift in allShifts array
+      const allShiftsToBeUpdated = this.state.allShifts.filter(() => {
+        return true
+      })
+
+      const shiftToUpdate = allShiftsToBeUpdated.find((shift) => {
+        return shift._id === shiftId
+      })
+
+      // 2. Update shift status
+      shiftToUpdate.status = 'archived'
+
+      // 3. Set new allShift state
+      this.setState(() => {
+        return {
+          allShifts: allShiftsToBeUpdated
+        }
+      })
+    }
+  }
+
+  deletePendingShift = async (shiftId) => {
+    try {
+      // 1. Send the delete request to the server
+      const result = await axios.delete(`http://${hostURL}/api/shifts/delete/${shiftId}`)
+      const deletedShift = result.data
+
+      // 2. Filter the shift from the array
+      const updatedShifts = this.state.allShifts.filter((shift) => {
+        return shift._id !== deletedShift._id
+      })
+
+      // 3. Set new allShift state
+      this.setState(() => {
+        return {
+          allShifts: updatedShifts
+        }
+      })
+    } catch (error) {
+      console.log(shiftId)
+      // 1. Filter the shift from the array
+      const updatedShifts = this.state.allShifts.filter((shift) => {
+        return shift._id !== shiftId
+      })
+
+      // 2. Set new allShift state
+      this.setState(() => {
+        return {
+          allShifts: updatedShifts
+        }
+      })
+    }
+  }
+
+  addShift = async (newShiftObject) => {
+    try {
+      // Send post request to create a new shift
+      const result = await axios.post(`http://${hostURL}/api/shifts/create`, {
+        date: newShiftObject.date,
+        location: newShiftObject.location,
+        startTime: newShiftObject.startTime,
+        endTime: newShiftObject.endTime,
+        standardMinutes: newShiftObject.standardMinutes,
+        overtimeMinutes: newShiftObject.overtimeMinutes,
+        doubleTimeMinutes: newShiftObject.doubleTimeMinutes,
+        totalPay: newShiftObject.totalPay
+      })
+
+      const newShift = result.data
+
+      // Set new allShift state and display message
+      this.setState((prevState) => {
+        return {
+          allShifts: prevState.allShifts.concat(result.data),
+          displayMessage: true
+        }
+      })
+
+      setTimeout(() => {
+        this.setState(() => {
+          return {
+            displayMessage: false
+          }
+        })
+      }, 5000)
+    } catch (error) {
+      this.setState((prevState) => {
+        return {
+          allShifts: prevState.allShifts.concat(newShiftObject),
+          displayMessage: true
+        }
+      })
+
+      setTimeout(() => {
+        this.setState(() => {
+          return {
+            displayMessage: false
+          }
+        })
+      }, 5000)
+    }
   }
 
   goBackOneWeek = () => {
@@ -62,7 +187,7 @@ class DashboardPage extends React.Component {
         paginationWeekStart: prevState.paginationWeekStart.subtract(7, 'days'),
         paginationWeekEnd: prevState.paginationWeekEnd.subtract(7, 'days')
       }
-    }) 
+    })
   }
 
   goForwardOneWeek = () => {
@@ -71,41 +196,51 @@ class DashboardPage extends React.Component {
         paginationWeekStart: prevState.paginationWeekStart.add(7, 'days'),
         paginationWeekEnd: prevState.paginationWeekEnd.add(7, 'days')
       }
-    }) 
+    })
   }
 
+  render () {
+    if (this.state.mounted) {
+      return (
+        <div className='DashBoardPage'>
 
-  render() {
-    return (
-      <div>
+          <div className={this.state.displayMessage ? 'shift_added_message_active' : 'shift_added_message_hidden'}>Shift added successfully</div>
 
-        <Form addShift={this.addShift} employee={this.state.employee}/>
+          <Form addShift={this.addShift} employee={this.state.employee} business={this.state.business}/>
 
-        <RejectedShifts 
-          rejectedShifts={this.state.allShifts.filter((shift) => {
-            return shift.status === "rejected"
-          })} 
-          archiveRejectedShift={this.archiveRejectedShift}
-        />
+          <RejectedShifts
+            rejectedShifts={this.state.allShifts.filter((shift) => {
+              return shift.status === 'rejected'
+            })}
+            archiveRejectedShift={this.archiveRejectedShift}
+          />
 
-        <PendingShifts 
-          pendingShifts={this.state.allShifts.filter((shift) => {
-            return shift.status === "pending"
-          })}
-        />
-        
-        {this.state.paginationWeekStart.format('MMMM Do')}
-        <button onClick={this.goBackOneWeek}>Previous Week</button>
-        <button onClick={this.goForwardOneWeek}>Next Week</button>
-        {this.state.paginationWeekEnd.format('MMMM Do')}
+          <PendingShifts
+            pendingShifts={this.state.allShifts.filter((shift) => {
+              return shift.status === 'pending'
+            })}
+            deletePendingShift={this.deletePendingShift}
+          />
+          <div className='pagination_container'>
+            <button className='pagination_button' onClick={this.goBackOneWeek}>{'<'}</button>
+            <span className='pagination_date'>{this.state.paginationWeekStart.format('DD MMM YYYY')}</span>
+            <span className='dates_spacing'>-</span>
+            <span className='pagination_date'>{this.state.paginationWeekEnd.format('DD MMM YYYY')}</span>
+            <button className='pagination_button' onClick={this.goForwardOneWeek}>{'>'}</button>
+          </div>
 
-        <AllShifts allShifts={this.state.allShifts.filter((shift) => {
-            return (shift.date >= this.state.paginationWeekStart && shift.date < this.state.paginationWeekEnd)
+          <AllShifts allShifts={this.state.allShifts.filter((shift) => {
+            return (moment(shift.date) >= this.state.paginationWeekStart && moment(shift.date) < this.state.paginationWeekEnd)
           })}/>
 
-      </div>
-    )
-  } 
+        </div>
+      )
+    } else {
+      return (
+        <div className="loader"></div>
+      )
+    }
+  }
 }
 
 export { DashboardPage }

@@ -3,17 +3,17 @@ import './ApproveHeader.scss'
 
 const ApproveHeader = (props) => {
   return (
-    <div className="shiftcard">
-      <div className="approveheader">Date</div>
-      <div className="approveheader">Name</div>
-      <div className="approveheader">Location</div>
-      <div className="approveheader">Time On</div>
-      <div className="approveheader">Time Off</div>
-      <div className="approveheader">ST</div>
-      <div className="approveheader">OT</div>
-      <div className="approveheader">DT</div>
-      <div className="approveheader">$</div>
-      <div className="approveheader">Status</div>
+    <div className="shiftcard cardheader">
+      <div onClick={props.sortBy} value="date">Date</div>
+      <div onClick={props.sortBy} value="fullName">Name</div>
+      <div onClick={props.sortBy} value="location">Location</div>
+      <div onClick={props.sortBy} value="startTime">Time On</div>
+      <div onClick={props.sortBy} value="endTime">Time Off</div>
+      <div onClick={props.sortBy} value="standardMinutes">ST</div>
+      <div onClick={props.sortBy} value="overtimeMinutes">OT</div>
+      <div onClick={props.sortBy} value="doubleTimeMinutes">DT</div>
+      <div onClick={props.sortBy} value="totalPay">$</div>
+      <div>Approval</div>
     </div>
   )
 }

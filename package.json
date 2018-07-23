@@ -16,7 +16,8 @@
     "seedEmployees": "node backend/seed/employeeSeeder.js",
     "seedManagers": "node backend/seed/managerSeeder.js",
     "seedShifts": "node backend/seed/shiftSeeder.js",
-    "seedBusinesses": "node backend/seed/businessSeeder.js"
+    "seedBusinesses": "node backend/seed/businessSeeder.js",
+    "seedData": "node backend/seed/dataSeeder.js"
   },
   "author": "",
   "license": "ISC",
@@ -46,6 +47,7 @@
     "sass-loader": "^7.0.3",
     "style-loader": "^0.21.0",
     "supertest": "^3.1.0",
+    "svg-sprite-loader": "^3.8.0",
     "webpack": "^4.15.1",
     "webpack-bundle-analyzer": "^2.13.1",
     "webpack-cli": "^3.0.8",
@@ -63,6 +65,7 @@
     "jsonwebtoken": "^8.3.0",
     "moment": "^2.22.2",
     "mongoose": "^5.2.3",
+    "nodemailer": "^4.6.7",
     "permit": "^0.2.2",
     "rc-time-picker": "^3.3.1",
     "react": "^16.4.1",
@@ -70,6 +73,7 @@
     "react-datepicker": "^1.5.0",
     "react-dates": "^17.0.0",
     "react-dom": "^16.4.1",
+    "react-modal": "^3.5.1",
     "react-router-dom": "^4.3.1",
     "reactstrap": "^6.3.0"
   }

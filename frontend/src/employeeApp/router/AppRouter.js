@@ -8,12 +8,13 @@ import Logo from '../../img/logo/chicken-in-logo.png'
 // Page Components
 import { DashboardPage } from '../dashboardPage/DashboardPage/DashboardPage'
 import { SettingsPage } from '../settingsPage/SettingsPage/SettingsPage'
+import { Nav } from './Nav/Nav'
 
 const AppRouter = () => {
   const logout = () => {
     axios.post(`http://${window.location.host}/auth/employee/logout`)
       .then(function (response) {
-        window.location.reload()
+        window.location.href = '/'
         console.log(response)
       })
       .catch(function (error) {
@@ -25,30 +26,18 @@ const AppRouter = () => {
     <BrowserRouter>
       <div className="maingrid">
 
-        <div className="nav">
-          <div className="logo">
-            <img src={Logo}/>
-          </div>
-          <br/>
-          <h1>Employee</h1>
-          <br/>
-          <p><Link to="/">Dashboard Page</Link></p>
-          <p><Link to="/settings">Settings Page</Link></p>
-          <button onClick={logout}>Logout</button>
-          <hr/>
-        </div>
-
         <div className="pagecontent">
-
-          <div className="usericon">
-            U
-          </div>
-
           <Switch>
             <Route exact path="/" component={DashboardPage} />
             <Route path="/settings" component={SettingsPage} />
           </Switch>
         </div>
+
+        <Nav>
+          <Link className="nav-element" to="/"><h1>Dashboard</h1></Link>
+          <Link className="nav-element" to="/settings"><h1>Settings</h1></Link>
+          <div className="nav-element"><a href="#logout" className="nav-link" onClick={logout}><h1>Logout</h1></a></div>
+        </Nav>
 
       </div>
     </BrowserRouter>
@@ -56,5 +45,3 @@ const AppRouter = () => {
 }
 
 export { AppRouter }
-
-

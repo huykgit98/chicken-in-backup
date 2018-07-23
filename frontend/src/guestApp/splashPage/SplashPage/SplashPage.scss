@@ -24,7 +24,8 @@
   text-align: center;
 }
 
-.SplashPage .button {
+.SplashPage .button_employee,
+.SplashPage .button_manager {
   background: none;
   border: none;
   outline: none;
@@ -43,6 +44,15 @@
 .SplashPage .button_manager {
   background: var(--c-warning);
   margin-left: 30px;
+}
+
+.login_error_message_active {
+  margin-top: 25px;
+  color: var(--c-warning);
+}
+
+.login_error_message_hidden {
+  display: none;
 }
 
 .SplashPage .login_form {

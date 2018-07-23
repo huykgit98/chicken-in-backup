@@ -5,14 +5,14 @@ const jwt = require('jsonwebtoken')
 const employeeSchema = new Schema({
   firstName: String,
   lastName: String,
+  fullName: String,
   email: String,
   password: String, // randomly generate a password upon creation and send emial to employee
   locations: [String],
   standardRate: Number, // cents
   business: {
-    // type: mongoose.Schema.Types.ObjectId, // Commented out for early testing
-    // ref: 'Business'
-    type: String // Remove this, uncomment next 2 lines
+    type: mongoose.Schema.Types.ObjectId, // Commented out for early testing
+    ref: 'Business'
   },
   active: {
     type: Boolean,
@@ -26,6 +26,10 @@ employeeSchema.methods.generateAuthToken = function (businessId) {
   const token = jwt.sign({ _id: this._id, userType: 'employee', businessId: businessId }, 'Private Key') // TODO: Change the private key
   return token
 }
+
+employeeSchema.pre('save', function () {
+  this.fullName = `${this.firstName} ${this.lastName}`
+})
 
 const Employee = mongoose.model('Employee', employeeSchema)
 

@@ -9,6 +9,7 @@ const logger = require('./middleware/logger')
 const cookieParser = require('cookie-parser')
 const jwt = require('jsonwebtoken')
 
+
 const app = new Express()
 const PORT = process.env.SERVER_PORT || 3000
 
@@ -41,6 +42,7 @@ const managerAuthRouter = require('./routes/managerAuthRouter')
 const contactRouter = require('./routes/contactRouter')
 const shiftsRouter = require('./routes/shiftsRouter')
 const employeesRouter = require('./routes/employeesRouter')
+const settingsRouter = require('./routes/settingsRouter')
 
 // Set base routes
 app.use('/auth/employee', employeeAuthRouter)
@@ -48,6 +50,52 @@ app.use('/auth/manager', managerAuthRouter)
 app.use('/api/contact/', contactRouter)
 app.use('/api/shifts', shiftsRouter)
 app.use('/api/employees/', employeesRouter)
+app.use('/api/settings/', settingsRouter)
+
+const nodemailer = require('nodemailer')
+app.post('/send', (req, res) => {
+  const emailBody = `
+  <h2>This is a test email sent from node!</h2>
+  <p>Here is some text</p>
+  <p>Here is some more text</p>
+  <p>...and some more text in case you feel like you haven't recieved enough text!</p>
+  `
+  // Generate test SMTP service account from ethereal.email
+  // Only needed if you don't have a real mail account for testing
+  // create reusable transporter object using the default SMTP transport
+  let transporter = nodemailer.createTransport({
+    host: process.env.EMAIL_HOST,
+    port: 25,
+    secure: false, // true for 465, false for other ports
+    auth: {
+      user: process.env.EMAIL_ACCOUNT, // generated ethereal user
+      pass: process.env.EMAIL_PASSWORD // generated ethereal password
+    },
+    tls: {
+      rejectUnauthorized: false
+    }
+  })
+
+  // setup email data with unicode symbols
+  let mailOptions = {
+    from: `"Chicken-In Support" <${process.env.EMAIL_ACCOUNT}>`, // sender address
+    to: process.env.EMAIL_STRING, // list of receivers
+    subject: 'Test bock bock', // Subject line
+    text: 'Hello world?', // plain text body
+    html: emailBody // html body
+  }
+
+  // send mail with defined transport object
+  transporter.sendMail(mailOptions, (error, info) => {
+    if (error) {
+      return console.log(error)
+    }
+    console.log('Message sent: %s', info.messageId)
+    console.log('Preview URL: %s', nodemailer.getTestMessageUrl(info))
+
+    res.send('Email sent!')
+  })
+})
 
 // Must be last route
 app.get('*', function (req, res) {
