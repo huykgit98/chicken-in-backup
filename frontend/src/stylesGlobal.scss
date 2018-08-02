@@ -25,9 +25,6 @@
     // Font Styles ✏️
     --font-family-headers: 'Open Sans', sans-serif; // var(--font-family-headers);
     --font-family-content: 'Lato', sans-serif; // var(--font-family-content);
-
-    // Global transition (for smooth hovers)
-    transition: 0.25s;
 }
 
 // --------------------------------------------------- GLOBAL: GENERAL OVERRIDES
@@ -100,7 +97,7 @@ a:visited {
 // ----------------------------------------------------- GLOBAL: SECTION STYLING
 .maingrid {
     width: 100%;
-
+    min-height: 100vh; // TODO: Did this break everything?
     display: grid;
     grid-template-columns: 275px 1fr;
     grid-template-areas: "nav pagecontent";
@@ -155,6 +152,8 @@ a:visited {
         .nav-element {
             width: 100%;
             padding: 0.75em 2em 0.75em 2em;
+
+            transition: 0.25s;
             
             text-decoration: none;
 
@@ -176,6 +175,8 @@ a:visited {
 // <pagecontent> tag for wrapping the main page
 .pagecontent {
     grid-area: pagecontent;
+    max-width: 900px;
+    margin: 0 auto;
     width: 100%;
     padding: 1em;
     padding-top: 4em;
@@ -191,7 +192,7 @@ a:visited {
     align-items: center;  
 
     padding: .25em 1em .25em 1em; // 1em at the sides
-    margin: 0 2em 0 2em; // 2em at the sides
+    margin: 0;
     width: 8em; // Media-queried for mobile to "100%"
     height: 2em; // Button Standard
     
@@ -206,6 +207,8 @@ a:visited {
     font-size: 16px;
     font-weight: bold;
 
+    transition: 0.25s;
+
     &.red { background-color: var(--c-warning); }
 
     &.green { background-color: var(--c-approved); }
@@ -215,41 +218,57 @@ a:visited {
     &.small {
         width: 1.6em;
         height: 1.6em;
-        margin: 0 1em 0 0;
+        margin: 0 0 0 0;
         padding: 0;
 
         border-radius: .1em;
     }
-}
 
-// <usericon> element- floated top right
-.usericon {
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    &.icon-edit {
+        background-position: center;
+        background-image: url('/img/edit-button.svg') no-repeat;
+        background-color: var(--c-edit);
+    }
 
-    width: 60px;
-    height: 60px;
-    border-radius: 5em;
+    &.icon-approve {
+        background-position: center;
+        background-image: url('/img/approve-button.svg') no-repeat;
+        background-color: var(--c-approved);
+    }
 
-    background-color: var(--c-bg-dark);
-    color: var(--c-font-light);
-
-    float: right;
-    cursor: pointer;
-    user-select: none;
-
-    &:hover{
+    &.icon-delete {
+        background-position: center;
+        background-image: url('/img/delete-button.svg') no-repeat;
         background-color: var(--c-warning);
     }
-    &:active{
-        background-color: var(--c-bg-light);
-        color: var(--c-font-dark);
+}
+
+// Button containers
+
+.button-header-container {
+
+    width: 100%;
+    margin: 0 0 2em 0;
+    
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    
+    .left-items {
+        display: flex;
+        flex-direction: row;
+        flex-grow: 1;
+        justify-content: flex-start; 
+    }
+
+    .right-items {
+        justify-content: flex-end;   
     }
 }
 
 .hamburger {
-    display: hidden;
+    display: none;
 }
 
 // Loader
@@ -301,7 +320,6 @@ a:visited {
   }
 }
 
-
 // ------------------------------------------ MEDIA QUERIES (MUST BE LAST STYLE)
 // -- 1024px (Tablet View)
 // -- NAVBAR Dissappears Here: Carries over for Mobile
@@ -340,7 +358,7 @@ a:visited {
         justify-content: center;
         align-items: center;
     
-        background-color: var(--c-bg-dark);
+        // background-color: var(--c-bg-dark);
         border-radius: .25em;
     
         img {
@@ -360,11 +378,60 @@ a:visited {
     .loader:after {
       position: fixed;
     }
+
+    .pagecontent {
+    padding-top: 4em;
+}
 }
 
 // -- 400px (Phablet + Landscape iPad + Mobile View)
 @media only screen and (max-width: 770px) {
-    // body {
-    //     background-color: var(--c-warning);
-    // }
+
+.admincontainer, .admincontainer-ap, .admincontainer-emp {
+    background-color: var(--c-bg-dark);
+    padding: 1em;
+    border-radius: .3em;
+
+    .shiftcard, .employeecard {
+        margin-top: 0;
+    }
+}
+
+.button-header-container {
+
+    width: 100%;
+    margin: 0 0 2em 0;
+    
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    
+    .left-items {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        flex-grow: 1;
+        justify-content: flex-start; 
+
+        .button {
+            width: 100%;
+            margin: 0 0 1em 0;
+        }
+    }
+
+    .right-items {
+        width: 100%;
+        justify-content: flex-end;
+        
+        .button {
+            width: 100%;
+        }
+    }
+
+
+}
+
+
+
 }

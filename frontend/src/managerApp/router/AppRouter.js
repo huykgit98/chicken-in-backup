@@ -5,9 +5,11 @@ import { hostURL } from '../../hostUrl'
 
 // Pages
 import { ReportPage } from '../reportPage/ReportPage/ReportPage'
+import { DataVisPage } from '../dataVisPage/DataVisPage/DataVisPage'
 import { ApprovePage } from '../approvePage/ApprovePage/ApprovePage'
 import { ManageEmployeesPage } from '../manageEmployeesPage/ManageEmployeesPage/ManageEmployeesPage'
 import { SettingsPage } from '../settingsPage/SettingsPage/SettingsPage'
+import { PageNotFound } from '../../PageNotFound/PageNotFound'
 
 // Components
 import { Nav1 } from './Nav/Nav'
@@ -56,14 +58,17 @@ class AppRouter1 extends React.Component {
           <div className="pagecontent">
             <Switch>
               <Route exact path="/" component={ReportPage} />
+              <Route path="/visualisation" component={DataVisPage}/>
               <Route path="/approve" component={ApprovePage}/>
               <Route path="/manage" component={ManageEmployeesPage}/>
               <Route path="/settings" component={SettingsPage}/>
+              <Route path="*" component={PageNotFound}/>
             </Switch>
           </div>
 
           <Nav1>
             <Link className="nav-element" to="/"><h1>Reports</h1></Link>
+            <Link className="nav-element" to="/visualisation"><h1>Data Visualization</h1></Link>
             <Link className="nav-element" to="/approve"><h1>Approve Shifts</h1></Link>
             <Link className="nav-element" to="/manage"><h1>Manage Team</h1></Link>
             <Link className="nav-element" to="/settings"><h1>Business Settings</h1></Link>

@@ -2,6 +2,7 @@ import React from 'react'
 import moment from 'moment'
 import axios from 'axios'
 import './ApprovePage.scss'
+import { hostURL } from '../../../hostUrl'
 
 // Components
 import { Button } from '../../router/Button/Button' // Shared Components
@@ -17,8 +18,8 @@ const URI = 'http://localhost:3000'
 class ApprovePage extends React.Component {
   state = {
     navShown: false,
-    businessData: [dummyBusiness[0]],
-    employeeData: dummyEmployee,
+    businessData: [],
+    employeeData: [],
     employeeList: null,
     pendingShifts: null,
     pagination: {
@@ -39,9 +40,8 @@ class ApprovePage extends React.Component {
   }
 
   // ---------------------------------------------------------- GET BACKEND DATA
-
   getShifts = () => {
-    axios.get(URI + '/api/shifts/pending')
+    axios.get(`http://${hostURL || window.location.host}/api/shifts/pending`)
       .then(({ data }) => {
         this.setState(() => {
           return {
@@ -63,11 +63,11 @@ class ApprovePage extends React.Component {
   }
 
   getBusinessData = () => {
-    axios.get(URI + '/api/settings/business')
+    axios.get(`http://${hostURL || window.location.host}/api/settings/business`)
       .then(({ data }) => {
         this.setState(() => {
           return {
-            businessData: data[0]
+            businessData: data
           }
         })
       })
@@ -77,7 +77,7 @@ class ApprovePage extends React.Component {
   }
 
   getEmployeeData = (uri) => {
-    axios.get(URI + '/api/employees')
+    axios.get(`http://${hostURL || window.location.host}/api/employees`)
       .then(({ data }) => {
         this.setState(() => {
           return {
@@ -106,6 +106,38 @@ class ApprovePage extends React.Component {
   }
 
   // ----------------------------------------------------------- UPDATING SHIFTS
+  approveShift = (shiftID) => {
+    axios.put(`http://${hostURL || window.location.host}/api/shifts/approve/${shiftID}`)
+      .then(() => {
+        this.setState(prevState => {
+          return {
+            pendingShifts: prevState.pendingShifts.filter(shift => {
+              return (shift._id !== shiftID)
+            })
+          }
+        })
+      })
+      .catch(err => {
+        console.log(err)
+      })
+  }
+
+  rejectShift = (shiftID) => {
+    axios.put(`http://${hostURL || window.location.host}/api/shifts/reject/${shiftID}`)
+      .then(() => {
+        this.setState(prevState => {
+          return {
+            pendingShifts: prevState.pendingShifts.filter(shift => {
+              return (shift._id !== shiftID)
+            })
+          }
+        })
+      })
+      .catch(err => {
+        console.log(err)
+      })
+  }
+
   updateShift = (event) => {
     const shiftID = event.target.getAttribute('shiftid')
     const status = event.target.getAttribute('status')
@@ -119,49 +151,14 @@ class ApprovePage extends React.Component {
     }
   }
 
-  approveShift = (shiftID) => {
-    axios.put(URI + '/api/shifts/approve/' + shiftID)
-      .then(() => {
-        this.setState(prevState => {
-          return {
-            pendingShifts: prevState.pendingShifts.filter(shift => {
-              return (shift._id !== shiftID)
-            })
-          }
-        })
-        console.log(`Shift: ${shiftID} Approved`)
-      })
-      .catch(err => {
-        console.log(err)
-      })
-  }
-
-  rejectShift = (shiftID) => {
-    axios.put(URI + '/api/shifts/reject/' + shiftID)
-      .then(() => {
-        this.setState(prevState => {
-          return {
-            pendingShifts: prevState.pendingShifts.filter(shift => {
-              return (shift._id !== shiftID)
-            })
-          }
-        })
-        console.log(`Shift: ${shiftID} Rejected`)
-      })
-      .catch(err => {
-        console.log(err)
-      })
-  }
-
   approveAllShifts = () => {
-    axios.put(URI + '/api/shifts/approveAll/')
+    axios.put(`http://${hostURL || window.location.host}/api/shifts/approveAll`)
       .then(() => {
         this.setState(prevState => {
           return {
             pendingShifts: []
           }
         })
-        console.log('All Shifts Approved')
       })
       .catch(err => {
         console.log(err)
@@ -255,67 +252,6 @@ class ApprovePage extends React.Component {
     })
   }
 
-  // ----------------------------------------------------------------- FILTERING
-  // filterShifts = (shifts, filters) => {
-  //   let newFilteredShifts = shifts.filter(shift => {
-  //     return (
-  //       true
-  //     )
-  //   })
-
-  //   this.setState(prevState => {
-  //     return {
-  //       pendingShifts: newFilteredShifts
-  //     }
-  //   })
-  // }
-
-  // filterLocationUpdate = (event) => {
-  //   let location = event.target.value
-
-  //   let filters = {
-  //     locations: this.state.filters.locations,
-  //     employees: this.state.filters.employees
-  //   }
-
-  //   if (location === 'All Locations') {
-  //     filters.locations = this.state.businessData.locations
-  //   } else {
-  //     filters.locations = [ location ]
-  //   }
-
-  //   this.setState(() => {
-  //     return {
-  //       filters: filters
-  //     }
-  //   })
-
-  //   this.filterShifts(this.state.pendingShifts, filters)
-  // }
-
-  // filterEmployeeUpdate = (event) => {
-  //   let employee = event.target.value
-
-  //   let filters = {
-  //     locations: this.state.filters.locations,
-  //     employees: this.state.filters.employees
-  //   }
-
-  //   if (employee === 'All Employees') {
-  //     filters.employees = this.state.employeeData.employees
-  //   } else {
-  //     filters.employees = [ employee ]
-  //   }
-
-  //   this.setState(() => {
-  //     return {
-  //       filters: filters
-  //     }
-  //   })
-
-  //   this.filterShifts(this.state.pendingShifts, filters)
-  // }
-
   // ------------------------------------------------ NEW FILTERS (thanks maxi!)
   toggleEmployeeFilter = (event) => {
     const filterToggle = event.target.getAttribute('value')
@@ -331,7 +267,7 @@ class ApprovePage extends React.Component {
           }
         }
       })
-    } else {      
+    } else {
       this.setState((prevState) => {
         return {
           filters: {
@@ -357,7 +293,7 @@ class ApprovePage extends React.Component {
           }
         }
       })
-    } else {      
+    } else {
       this.setState((prevState) => {
         return {
           filters: {
@@ -387,26 +323,6 @@ class ApprovePage extends React.Component {
         <div>
           <div className="button-header-container">
             <div className="left-items">
-              {/* <select onChange={this.filterLocationUpdate}>
-                <option defaultValue="All Locations">All Locations</option>
-                { !this.state.businessData.locations
-                  ? <option value="" key="">Loading</option>
-                  : this.state.businessData.locations.map((location, index) => {
-                    return (<option value={location} key={index}>{location}</option>)
-                  })
-                }
-              </select>
-
-              <select onChange={this.filterEmployeeUpdate}>
-                <option defaultValue="All Employees">All Employees</option>
-                { !this.state.employeeList
-                  ? <option value="" key="">Loading</option>
-                  : this.state.employeeList.map((employee, index) => {
-                    return (<option value={employee} key={index}>{employee}</option>)
-                  })
-                }
-              </select> */}
-
               <Filters
                 toggleEmployeeFilter={this.toggleEmployeeFilter}
                 toggleLocationFilter={this.toggleLocationFilter}

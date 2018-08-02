@@ -8,18 +8,37 @@ const auth = require('./middleware/authMiddleware')
 const logger = require('./middleware/logger')
 const cookieParser = require('cookie-parser')
 const jwt = require('jsonwebtoken')
-
+// const { runSeeder } = require('./seed/dataSeeder')
+const { updateShifts, createShifts } = require('./seed/timedSeeder')
 
 const app = new Express()
-const PORT = process.env.SERVER_PORT || 3000
+let PORT = process.env.SERVER_PORT || 3000
+let dbURL = `${process.env.MONGO_URL}:${process.env.MONGO_PORT}/chickenin`
 
-// DB Connection
-const dbURL = `${process.env.MONGO_URL}:${process.env.MONGO_PORT}/chickenin`
+// Use Test DB if Tests are being run
+if (process.env.NODE_ENV === 'test') {
+  console.log('🐔 👨‍🔬 NODE_ENV: \'test\'')
+  dbURL = `${process.env.MONGO_URL}:${process.env.MONGO_PORT}/chickenin-test`
+  PORT = 1337
+} else if (process.env.NODE_ENV === 'development') {
+  console.log('🐔 👷‍♂️ NODE_ENV: \'development\' - Auth Disabled')
+} else if (process.env.NODE_ENV === 'production') {
+  console.log('🐔 ☢️ NODE_ENV: \'production\'')
+}
+
 console.log(`🛢  📘 MongoDB: ${dbURL}`) // Display the parsed URL in server logs
 
+// DB Connection
 mongoose.connect(dbURL, { useNewUrlParser: true })
   .then(() => {
     console.log('🛢  ✅ Mongo Connection established.')
+    console.log('Node Environment:', process.env.NODE_ENV)
+    // runSeeder() // Seed data
+    updateShifts() // Manager update existing shifts every week
+    createShifts() // Employees create new shifts every day
+  })
+  .then(() => {
+    app.emit('started') // Tell our tests they're ready to go
   })
   .catch(error => {
     console.error('💥 ❌ MONGO_CONNECT_ERROR: Have you started your mongodb?')
@@ -52,49 +71,9 @@ app.use('/api/shifts', shiftsRouter)
 app.use('/api/employees/', employeesRouter)
 app.use('/api/settings/', settingsRouter)
 
-const nodemailer = require('nodemailer')
-app.post('/send', (req, res) => {
-  const emailBody = `
-  <h2>This is a test email sent from node!</h2>
-  <p>Here is some text</p>
-  <p>Here is some more text</p>
-  <p>...and some more text in case you feel like you haven't recieved enough text!</p>
-  `
-  // Generate test SMTP service account from ethereal.email
-  // Only needed if you don't have a real mail account for testing
-  // create reusable transporter object using the default SMTP transport
-  let transporter = nodemailer.createTransport({
-    host: process.env.EMAIL_HOST,
-    port: 25,
-    secure: false, // true for 465, false for other ports
-    auth: {
-      user: process.env.EMAIL_ACCOUNT, // generated ethereal user
-      pass: process.env.EMAIL_PASSWORD // generated ethereal password
-    },
-    tls: {
-      rejectUnauthorized: false
-    }
-  })
-
-  // setup email data with unicode symbols
-  let mailOptions = {
-    from: `"Chicken-In Support" <${process.env.EMAIL_ACCOUNT}>`, // sender address
-    to: process.env.EMAIL_STRING, // list of receivers
-    subject: 'Test bock bock', // Subject line
-    text: 'Hello world?', // plain text body
-    html: emailBody // html body
-  }
-
-  // send mail with defined transport object
-  transporter.sendMail(mailOptions, (error, info) => {
-    if (error) {
-      return console.log(error)
-    }
-    console.log('Message sent: %s', info.messageId)
-    console.log('Preview URL: %s', nodemailer.getTestMessageUrl(info))
-
-    res.send('Email sent!')
-  })
+// Setup the most basic test route
+app.use('/test/', function (req, res) {
+  res.status(200).json({ data: 'test' })
 })
 
 // Must be last route
@@ -109,8 +88,7 @@ app.get('*', function (req, res) {
 
   try {
     // 3. If the token exists, decode the jwt
-    const decodedPayload = jwt.verify(token, 'Private Key') // TODO: Update provate key to something secret
-
+    const decodedPayload = jwt.verify(token, process.env.JWT_KEY)
     // 4. Get the user type from the decoded payload
     const userType = decodedPayload.userType
 
@@ -132,11 +110,17 @@ app.get('*', function (req, res) {
   }
 })
 
-app.listen(PORT, () => {
+// Server stored to a variable to export for testing routes
+const server = app.listen(PORT, () => {
   let currentTime = new Date(Date.now()).toLocaleTimeString()
-  console.log(`🐔 ✅ ${currentTime}: express server listening on port ${PORT}`)
+  console.log(`🐔  ✅ ${currentTime}: express server listening on port ${PORT}`)
 })
   .on('error', (error) => {
     console.log('💥 💥 Server Error:')
     console.log(error)
   })
+
+module.exports = {
+  app: app,
+  server: server // for testing
+}

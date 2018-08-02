@@ -1,39 +1,135 @@
 import React from 'react'
+import axios from 'axios'
 import AllEmployees from '../AllEmployees/AllEmployees'
 import AddEmployeeModal from '../AddEmployeeModal/AddEmployeeModal'
 import EditEmployeeModal from '../EditEmployeeModal/EditEmployeeModal'
 import './ManageEmployeesPage.scss'
-
-import { dummyData } from '../../../dummyData'
+import { hostURL } from '../../../hostUrl'
 
 class ManageEmployeesPage extends React.Component {
   state = {
-    employees: dummyData,
-    direction: 'asce',
-    addEmployeeForm: undefined,
-    editEmployeeForm: undefined,
+    employees: [],
+    businessData: {
+      locations: [],
+      overtimeMultiplier: null,
+      doubleTimeMultiplier: null
+    },
     employeeEdit: {
       id: null,
       firstName: null,
       lastName: null,
       email: null,
       locations: [],
-      standardRate: null,
-      password: null
-    }
+      standardRate: null
+    },
+    direction: 'asce',
+    addEmployeeForm: undefined,
+    editEmployeeForm: undefined,
+    displayLocationCheckbox: false
+  }
+
+  componentDidMount = () => {
+    this.getAllEmployees()
+    this.getBusinessData()
+  }
+
+  // Axios
+  getAllEmployees = () => {
+    axios.get(`http://${hostURL || window.location.host}/api/employees`)
+      .then(({ data }) => {
+        this.setState(() => {
+          return {
+            employees: data
+          }
+        })
+      })
+      .catch((err) => {
+        console.log(err)
+      })
+  }
+
+  getBusinessData = () => {
+    axios.get(`http://${hostURL || window.location.host}/api/settings/business`)
+      .then(({ data }) => {
+        this.setState(() => {
+          return {
+            businessData: data
+          }
+        })
+      })
+      .catch((err) => {
+        console.log(err)
+      })
+  }
+
+  createEmployee = employee => {
+    axios.post(`http://${hostURL || window.location.host}/api/employees/create`, employee)
+      .then(({ data }) => {
+        this.setState((prevState) => {
+          return {
+            employees: [data, ...prevState.employees]
+          }
+        })
+      })
+      .catch((err) => {
+        console.log(err)
+      })
+  }
+
+  editEmployee = (id, employee) => {
+    axios.put(`http://${hostURL || window.location.host}/api/employees/${id}`, employee)
+      .then(({ data }) => {
+        this.updateEmployeeState(data)
+      })
+      .catch((err) => {
+        console.log(err)
+      })
+  }
+
+  deleteEmployee = id => {
+    axios.delete(`http://${hostURL || window.location.host}/api/employees/${id}`)
+      .then(({ data }) => {
+        this.setState((prevState) => {
+          return {
+            employees: prevState.employees.filter((employee) => {
+              return employee._id !== id
+            })
+          }
+        })
+      })
+      .catch((err) => {
+        console.log(err)
+      })
   }
 
   // Functions
-  selectEmployee = (e) => {
-    return this.state.employees.filter(employee => employee.id === e)
+  selectEmployee = e => {
+    return this.state.employees.filter(employee => employee._id === e)
   }
-  
-  checkLocation = (location) => {
-    if (location.checked) {
-      return location.value
-    } else {
-      return null
+
+  updateEmployeeState = newEmployee => {
+    // Create new array
+    const updatedEmployees = this.state.employees
+    const oldEmployeeIndex = updatedEmployees.findIndex(employee => employee._id === newEmployee._id)
+    updatedEmployees[oldEmployeeIndex] = newEmployee
+
+    this.setState(() => {
+      return {
+        employees: updatedEmployees
+      }
+    })
+  }
+
+  selectLocations = e => {
+    const selectedLocations = []
+    const locationForm = e.target.location
+    for (let i = 0, iLen = this.state.businessData.locations.length; i < iLen; i++) {
+      if (locationForm[i].checked) {
+        selectedLocations.push(locationForm[i].value)
+      }
     }
+
+    return selectedLocations
   }
 
   // Handlers
@@ -74,16 +170,15 @@ class ManageEmployeesPage extends React.Component {
   openEditEmployeeModal = e => {
     const selectedEmployee = this.selectEmployee(e)
 
-    // Show previous information on inputs
+    // Show previous information on input fields
     this.setState((prevState) => ({
       employeeEdit: {
-        id: selectedEmployee[0].id,
+        id: selectedEmployee[0]._id,
         firstName: selectedEmployee[0].firstName,
         lastName: selectedEmployee[0].lastName,
         email: selectedEmployee[0].email,
         locations: selectedEmployee[0].locations,
-        standardRate: selectedEmployee[0].standardRate,
-        password: selectedEmployee[0].password
+        standardRate: selectedEmployee[0].standardRate
       },
       editEmployeeForm: true
     }))
@@ -104,7 +199,6 @@ class ManageEmployeesPage extends React.Component {
 
     // Create new object
     const newEmployee = {
-      id: null,
       firstName: e.target[0].name === 'firstName'
         ? e.target[0].value
         : null,
@@ -114,17 +208,17 @@ class ManageEmployeesPage extends React.Component {
       email: e.target[2].name === 'email'
         ? e.target[2].value
         : null,
-      password: 'defaultpassword',
-      locations: [this.checkLocation(e.target[3]), this.checkLocation(e.target[4]), this.checkLocation(e.target[5])],
-      standardRate: e.target[6].name === 'standardRate'
-        ? e.target[6].value
+      standardRate: e.target[3].name === 'standardRate'
+        ? e.target[3].value * 100 // doller to cent
         : null,
-      business: null
+      locations: this.selectLocations(e)
     }
 
-    // Add above in employees array
-    this.setState((prevState) => ({
-      employees: [newEmployee, ...prevState.employees],
+    // Send to server
+    this.createEmployee(newEmployee)
+
+    // Close modal
+    this.setState(() => ({
       addEmployeeForm: undefined
     }))
   }
@@ -134,7 +228,7 @@ class ManageEmployeesPage extends React.Component {
 
     // Create new object
     const changedEmployee = {
-      id: this.state.employeeEdit.id,
+      _id: this.state.employeeEdit.id,
       firstName:
         e.target[0].value !== this.state.employeeEdit.firstName
           ? e.target[0].value
@@ -147,59 +241,69 @@ class ManageEmployeesPage extends React.Component {
         e.target[2].value !== this.state.employeeEdit.email
           ? e.target[2].value
           : this.state.employeeEdit.email,
-      password: this.state.employeeEdit.password,
-      locations: [this.checkLocation(e.target[3]), this.checkLocation(e.target[4]), this.checkLocation(e.target[5])],
       standardRate:
-        e.target[6].value !== this.state.employeeEdit.standardRate
-          ? e.target[6].value
-          : this.state.employeeEdit.standardRate
+        e.target[3].value !== this.state.employeeEdit.standardRate
+          ? e.target[3].value * 100 // doller to cent
+          : this.state.employeeEdit.standardRate,
+      locations: this.selectLocations(e)
     }
 
-    // Create new array
-    const uppdatedEmployees = this.state.employees
-    const oldEmployeeIndex = this.state.employees.findIndex(employee => employee.id === changedEmployee.id)
-    uppdatedEmployees[oldEmployeeIndex] = changedEmployee
+    // Send to server
+    this.editEmployee(changedEmployee._id, changedEmployee)
 
-    // Change employees array
+    // Close modal
     this.setState(() => ({
-      employees: uppdatedEmployees,
       editEmployeeForm: undefined
     }))
   }
 
   handleDelete = e => {
-    // Create new array
-    const afterDeletedEmployee = [...this.state.employees]
-    const selectedEmployee = this.selectEmployee(e)
-    const deletedEmployeeIndex = this.state.employees.findIndex(employee => employee.id === selectedEmployee[0].id)
-    afterDeletedEmployee.splice(deletedEmployeeIndex, 1)
+    this.deleteEmployee(e)
+  }
 
-    // Change state
-    this.setState({employees: afterDeletedEmployee})
+  toggleLocationCheckbox = () => {
+    this.setState((prevState) => {
+      return {
+        displayLocationCheckbox: !prevState.displayLocationCheckbox
+      }
+    })
   }
 
   render () {
     return (
-      <div className="admincontainer">
-        <button className="add-button" onClick={this.openAddEmployeeModal}>Add New</button>
-        <AllEmployees
-          employees={this.state.employees}
-          openEditEmployeeModal={this.openEditEmployeeModal}
-          handleDelete={this.handleDelete}
-          sortBy={this.sortBy}
-        />
-        <AddEmployeeModal
-          addEmployeeForm={this.state.addEmployeeForm}
-          closeAddEmployeeModal={this.closeAddEmployeeModal}
-          handleCreate={this.handleCreate}
-          appElement={'body'}
-        />
-        <EditEmployeeModal
-          editEmployeeForm={this.state.editEmployeeForm}
-          employeeEdit={this.state.employeeEdit}
-          handleEdit={this.handleEdit}
-          closeEditEmployeeModal={this.closeEditEmployeeModal}
-        />
+      <div>
+        <div className="button-header-container">
+          <div className="left-items"></div>
+          <div className="right-items">
+            <button className="add-button" onClick={this.openAddEmployeeModal}>Add New</button>
+          </div>
+        </div>
+        <div className="admincontainer-emp">
+          <AllEmployees
+            employees={this.state.employees}
+            businessData={this.state.businessData}
+            openEditEmployeeModal={this.openEditEmployeeModal}
+            handleDelete={this.handleDelete}
+            sortBy={this.sortBy}
+          />
+          <AddEmployeeModal
+            addEmployeeForm={this.state.addEmployeeForm}
+            handleCreate={this.handleCreate}
+            toggleLocationCheckbox={this.toggleLocationCheckbox}
+            displayLocationCheckbox={this.state.displayLocationCheckbox}
+            closeAddEmployeeModal={this.closeAddEmployeeModal}
+            businessLocations={this.state.businessData.locations}
+          />
+          <EditEmployeeModal
+            editEmployeeForm={this.state.editEmployeeForm}
+            employeeEdit={this.state.employeeEdit}
+            handleEdit={this.handleEdit}
+            toggleLocationCheckbox={this.toggleLocationCheckbox}
+            displayLocationCheckbox={this.state.displayLocationCheckbox}
+            closeEditEmployeeModal={this.closeEditEmployeeModal}
+            businessLocations={this.state.businessData.locations}
+          />
+        </div>
       </div>
     )
   }

@@ -61,16 +61,29 @@ const generateEmployees = async (password, businessID, businessLocations) => {
   // 3. Generate employees
   const employeesArray = [
     new Employee({ // Demo Employee
-      firstName: 'Steven',
-      lastName: 'Salad',
-      email: 'steve@redrocks.com',
+      firstName: 'Demo',
+      lastName: 'Account',
+      email: 'demo@redrocks.com',
       password: demoHashedPassword,
       locations: [
         businessLocations[Math.floor(Math.random() * businessLocations.length)],
         businessLocations[Math.floor(Math.random() * businessLocations.length)],
         businessLocations[Math.floor(Math.random() * businessLocations.length)]
       ],
-      standardRate: 3750, // cents
+      standardRate: 1950, // cents
+      business: businessID
+    }),
+    new Employee({ // Demo Employee
+      firstName: 'Steven',
+      lastName: 'Salad',
+      email: 'steve@redrocks.com',
+      password: hashedPassword,
+      locations: [
+        businessLocations[Math.floor(Math.random() * businessLocations.length)],
+        businessLocations[Math.floor(Math.random() * businessLocations.length)],
+        businessLocations[Math.floor(Math.random() * businessLocations.length)]
+      ],
+      standardRate: 1950, // cents
       business: businessID
     }),
     new Employee({
@@ -96,7 +109,7 @@ const generateEmployees = async (password, businessID, businessLocations) => {
         businessLocations[Math.floor(Math.random() * businessLocations.length)],
         businessLocations[Math.floor(Math.random() * businessLocations.length)]
       ],
-      standardRate: 2000, // cents
+      standardRate: 2450, // cents
       business: businessID
     }),
     new Employee({
@@ -122,7 +135,7 @@ const generateEmployees = async (password, businessID, businessLocations) => {
         businessLocations[Math.floor(Math.random() * businessLocations.length)],
         businessLocations[Math.floor(Math.random() * businessLocations.length)]
       ],
-      standardRate: 2100, // cents
+      standardRate: 2450, // cents
       business: businessID
     }),
     new Employee({
@@ -135,7 +148,7 @@ const generateEmployees = async (password, businessID, businessLocations) => {
         businessLocations[Math.floor(Math.random() * businessLocations.length)],
         businessLocations[Math.floor(Math.random() * businessLocations.length)]
       ],
-      standardRate: 2650, // cents
+      standardRate: 3500, // cents
       business: businessID
     }),
     new Employee({
@@ -161,7 +174,7 @@ const generateEmployees = async (password, businessID, businessLocations) => {
         businessLocations[Math.floor(Math.random() * businessLocations.length)],
         businessLocations[Math.floor(Math.random() * businessLocations.length)]
       ],
-      standardRate: 1900, // cents
+      standardRate: 3500, // cents
       business: businessID
     }),
     new Employee({
@@ -174,7 +187,7 @@ const generateEmployees = async (password, businessID, businessLocations) => {
         businessLocations[Math.floor(Math.random() * businessLocations.length)],
         businessLocations[Math.floor(Math.random() * businessLocations.length)]
       ],
-      standardRate: 2100, // cents
+      standardRate: 3250, // cents
       business: businessID
     })
   ]
@@ -188,18 +201,24 @@ const generateEmployees = async (password, businessID, businessLocations) => {
 /// /////////////////////////////////
 const generateShifts = async (employeesArray, businessId) => {
   const statuses = ['approved', 'approved', 'approved', 'approved', 'approved', 'approved', 'approved', 'approved', 'approved', 'approved', 'approved', 'approved', 'pending', 'pending', 'pending', 'rejected', 'archived']
+  const extraMinutes = [0, 30]
 
   // 1. Generate shifts
   const shiftsArray = []
-  for (let i = 0; i < 500; i++) {
+  for (let i = 0; i < 300; i++) {
+    const randomTime = {
+      early: ((Math.floor(Math.random() * 6) + 5) * 60) + extraMinutes[Math.floor(Math.random() * 2)],
+      late: ((Math.floor(Math.random() * 8) + 13) * 60) + extraMinutes[Math.floor(Math.random() * 2)]
+    }
+
     // Pick a random employee
     let randomEmployee = employeesArray[Math.floor(Math.random() * employeesArray.length)]
 
-    // Set random start and end times
-    let startTime = Math.ceil(Math.random() * 720)
-    let endTime = startTime + Math.ceil(Math.random() * 720)
+    // Set random start and end time
+    let startTime = randomTime.early
+    let endTime = randomTime.late
 
-    let shiftDate = moment().add(7, 'days').subtract(Math.floor(Math.random() * 28), 'days')
+    let shiftDate = moment().subtract(Math.floor(Math.random() * 28), 'days')
 
     let { standardMinutes, overtimeMinutes, doubleTimeMinutes, totalPay } = calculateTime(shiftDate, startTime, endTime, randomEmployee.standardRate, 1.5, 2)
 
@@ -260,7 +279,7 @@ const runSeeder = async () => {
     const manager = await generateManager('ed@redrocks.com', process.env.MANAGER_PASSWORD, businessId) // Finalize manager details
     const savedManager = await manager.save()
 
-    const demoManager = await generateManager('steve@redrocks.com', 'password', businessId) // Demo manager
+    const demoManager = await generateManager('demo@redrocks.com', 'password', businessId) // Demo manager
     await demoManager.save()
 
     // 6. Seed employees and fill array with employee Ids
@@ -279,8 +298,8 @@ const runSeeder = async () => {
       done++
       if (done === shiftsArray.length) {
         // 7. Disconnect from database
+        mongoose.connection.close()
         console.log('All data seeded successfully!')
-        mongoose.disconnect()
       }
     }
   } catch (error) {
@@ -291,3 +310,5 @@ const runSeeder = async () => {
 }
 
 runSeeder()
+
+// module.exports = { runSeeder }
