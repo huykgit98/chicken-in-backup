@@ -41,7 +41,7 @@ class ApprovePage extends React.Component {
 
   // ---------------------------------------------------------- GET BACKEND DATA
   getShifts = () => {
-    axios.get(`http://${hostURL || window.location.host}/api/shifts/pending`)
+    axios.get(`https://${hostURL || window.location.host}/api/shifts/pending`)
       .then(({ data }) => {
         this.setState(() => {
           return {
@@ -63,7 +63,7 @@ class ApprovePage extends React.Component {
   }
 
   getBusinessData = () => {
-    axios.get(`http://${hostURL || window.location.host}/api/settings/business`)
+    axios.get(`https://${hostURL || window.location.host}/api/settings/business`)
       .then(({ data }) => {
         this.setState(() => {
           return {
@@ -77,7 +77,7 @@ class ApprovePage extends React.Component {
   }
 
   getEmployeeData = (uri) => {
-    axios.get(`http://${hostURL || window.location.host}/api/employees`)
+    axios.get(`https://${hostURL || window.location.host}/api/employees`)
       .then(({ data }) => {
         this.setState(() => {
           return {
@@ -107,7 +107,7 @@ class ApprovePage extends React.Component {
 
   // ----------------------------------------------------------- UPDATING SHIFTS
   approveShift = (shiftID) => {
-    axios.put(`http://${hostURL || window.location.host}/api/shifts/approve/${shiftID}`)
+    axios.put(`https://${hostURL || window.location.host}/api/shifts/approve/${shiftID}`)
       .then(() => {
         this.setState(prevState => {
           return {
@@ -123,7 +123,7 @@ class ApprovePage extends React.Component {
   }
 
   rejectShift = (shiftID) => {
-    axios.put(`http://${hostURL || window.location.host}/api/shifts/reject/${shiftID}`)
+    axios.put(`https://${hostURL || window.location.host}/api/shifts/reject/${shiftID}`)
       .then(() => {
         this.setState(prevState => {
           return {
@@ -152,7 +152,7 @@ class ApprovePage extends React.Component {
   }
 
   approveAllShifts = () => {
-    axios.put(`http://${hostURL || window.location.host}/api/shifts/approveAll`)
+    axios.put(`https://${hostURL || window.location.host}/api/shifts/approveAll`)
       .then(() => {
         this.setState(prevState => {
           return {

@@ -34,7 +34,7 @@ class SettingsPage extends React.Component {
   // axios
 
   getBusinessData = () => {
-    axios.get(`http://${hostURL || window.location.host}/api/settings/business`)
+    axios.get(`https://${hostURL || window.location.host}/api/settings/business`)
       .then(res => {
         const data = res.data
         this.setState(() => {
@@ -54,7 +54,7 @@ class SettingsPage extends React.Component {
 
   updateNewSettings = (e) => {
     e.preventDefault()
-    axios.put(`http://${hostURL || window.location.host}/api/settings/business`, {
+    axios.put(`https://${hostURL || window.location.host}/api/settings/business`, {
       name: this.state.name,
       address: this.state.address,
       locations: this.state.locations,
@@ -70,7 +70,7 @@ class SettingsPage extends React.Component {
   }
 
   updatePassword = () => {
-    axios.put(`http://${hostURL || window.location.host}/auth/manager/updatePassword`, {
+    axios.put(`https://${hostURL || window.location.host}/auth/manager/updatePassword`, {
       oldPassword: this.state.oldPassword,
       newPassword: this.state.newPassword
     })

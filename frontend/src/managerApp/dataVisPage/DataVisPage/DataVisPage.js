@@ -32,7 +32,7 @@ class DataVisPage extends React.Component {
 
   // ---------------------------------------------------------- GET BACKEND DATA
   getShifts = () => {
-    axios.get(`http://${hostURL || window.location.host}/api/shifts/all`)
+    axios.get(`https://${hostURL || window.location.host}/api/shifts/all`)
       .then(({ data }) => {
         this.setState(() => {
           return {

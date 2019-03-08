@@ -33,7 +33,7 @@ class ContactPage extends React.Component {
       }
     })
 
-    await axios.post(`http://${hostURL || window.location.host}/api/contact/`, this.state)
+    await axios.post(`https://${hostURL || window.location.host}/api/contact/`, this.state)
     this.setState(() => {
       return {
         sendMessage: true,

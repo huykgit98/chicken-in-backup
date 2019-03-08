@@ -35,7 +35,7 @@ class ManageEmployeesPage extends React.Component {
 
   // Axios
   getAllEmployees = () => {
-    axios.get(`http://${hostURL || window.location.host}/api/employees`)
+    axios.get(`https://${hostURL || window.location.host}/api/employees`)
       .then(({ data }) => {
         this.setState(() => {
           return {
@@ -49,7 +49,7 @@ class ManageEmployeesPage extends React.Component {
   }
 
   getBusinessData = () => {
-    axios.get(`http://${hostURL || window.location.host}/api/settings/business`)
+    axios.get(`https://${hostURL || window.location.host}/api/settings/business`)
       .then(({ data }) => {
         this.setState(() => {
           return {
@@ -63,7 +63,7 @@ class ManageEmployeesPage extends React.Component {
   }
 
   createEmployee = employee => {
-    axios.post(`http://${hostURL || window.location.host}/api/employees/create`, employee)
+    axios.post(`https://${hostURL || window.location.host}/api/employees/create`, employee)
       .then(({ data }) => {
         this.setState((prevState) => {
           return {
@@ -77,7 +77,7 @@ class ManageEmployeesPage extends React.Component {
   }
 
   editEmployee = (id, employee) => {
-    axios.put(`http://${hostURL || window.location.host}/api/employees/${id}`, employee)
+    axios.put(`https://${hostURL || window.location.host}/api/employees/${id}`, employee)
       .then(({ data }) => {
         this.updateEmployeeState(data)
       })
@@ -87,7 +87,7 @@ class ManageEmployeesPage extends React.Component {
   }
 
   deleteEmployee = id => {
-    axios.delete(`http://${hostURL || window.location.host}/api/employees/${id}`)
+    axios.delete(`https://${hostURL || window.location.host}/api/employees/${id}`)
       .then(({ data }) => {
         this.setState((prevState) => {
           return {

@@ -46,7 +46,7 @@ class SettingsPage extends React.Component {
         })
 
         console.log(this.state)
-        await axios.put(`http://${hostURL || window.location.host}/auth/employee/updatePassword`, this.state)
+        await axios.put(`https://${hostURL || window.location.host}/auth/employee/updatePassword`, this.state)
 
         this.setState(() => {
           return {

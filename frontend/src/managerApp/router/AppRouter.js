@@ -40,7 +40,7 @@ class AppRouter1 extends React.Component {
   logout = (event) => {
     event.preventDefault()
 
-    axios.post(`http://${hostURL || window.location.host}/auth/employee/logout`)
+    axios.post(`https://${hostURL || window.location.host}/auth/employee/logout`)
       .then(function (response) {
         window.location.href = '/'
         console.log(response)

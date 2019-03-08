@@ -41,7 +41,7 @@ class SplashPage extends React.Component {
 
   handleSubmit = async (e) => {
     e.preventDefault()
-    axios.post(`http://${hostURL || window.location.host}/auth/${this.state.logInAs}/login`, {
+    axios.post(`https://${hostURL || window.location.host}/auth/${this.state.logInAs}/login`, {
       email: this.state.email,
       password: this.state.password
     })

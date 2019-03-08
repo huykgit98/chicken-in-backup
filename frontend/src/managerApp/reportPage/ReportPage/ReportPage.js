@@ -30,7 +30,7 @@ class ReportPage extends React.Component {
 
     // try {
     //   // 1. Get data from server
-    //   const response = await axios.get(`http://${hostURL || window.location.host}/api/shifts/all`)
+    //   const response = await axios.get(`https://${hostURL || window.location.host}/api/shifts/all`)
     //   const allShifts = response.data
 
     //   // 2. Set state of component
@@ -62,7 +62,7 @@ class ReportPage extends React.Component {
 
   // ---------------------------------------------------------- GET BACKEND DATA
   getShifts = () => {
-    axios.get(`http://${hostURL || window.location.host}/api/shifts/all`)
+    axios.get(`https://${hostURL || window.location.host}/api/shifts/all`)
       .then(({ data }) => {
         this.setState(() => {
           return {
